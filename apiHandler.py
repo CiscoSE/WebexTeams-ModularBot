@@ -252,7 +252,7 @@ def index():
     - If the message is valid, extract the room ID (for message replies) and the message text which will be
       passed to the dnaCenter class for processing
     """
-    with CiscoWebex.webexTeams.webexTeams(botname, tmp=apiConfig.tmpdir) as teams:
+    with CiscoWebex.webexTeams.webexTeams(botname, logname=apiConfig.logname, tmp=apiConfig.tmpdir) as teams:
         if teams.validateMessage(raw, request.headers):
             # The message is valid, proceed...
             logger.debug("Message is valid, proceeding...")
@@ -275,7 +275,7 @@ def index():
                 function to generate the proper Webex Teams response
                 """
                 messagetext = messagetext.get('text', '').lower()
-                messagetext = messagetext.replace(teams.myBotName().lower(), '').lstrip()
+                messagetext = messagetext.replace(botname.lower(), '').lstrip()
                 logger.debug("Message text received: %s", messagetext)
 
                 teams.sendMessage(roomid, "Let me work on that... \U0001F557")
