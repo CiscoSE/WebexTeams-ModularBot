@@ -122,12 +122,12 @@ def removeFile(filename):
     """
     retval = False
     try:
-        logger.debug("Removing file: {}".format(filename))
+        logger.debug("Removing file: %s", filename)
         os.remove(filename)
         retval = True
     except OSError as e:  ## if failed, report it back to the user ##
-        logger.error("Error: %s - %s." % (e.filename, e.strerror))
-    logger.debug("Removed file {}".format(filename))
+        logger.error("Error: %s - %s.", e.filename, e.strerror)
+    logger.debug("Removed file %s", filename)
     return retval
 
 def parseResponse(teamobj, roomid, response):
@@ -141,30 +141,65 @@ def parseResponse(teamobj, roomid, response):
     :return: True if response successfully processed, False otherwise.
     """
     retval = False
-    logger.debug("Parsing response from called package.  Response value:\n{}".format(response))
+    logger.debug("Parsing response from called package.  Response value:\n\t%s", response)
+
+    """
+    If the received response is False, there was a problem somewhere along the line and we won't be able
+    to process it.  If not false, we should have a valid API response structure and can do something with it. 
+    """
     if response != False:
         if response['responseType'] == 'error':
+            """
+            Our package gave an error.  Create a text and rich text message then reply via Webex Teams.
+            """
             logger.warning("There was a problem performing the requested task - check log file for details")
-            errmsg = "{0}\nThere was a performing the requested task.  The error message is:\n{1}".format('\U0001F92E',
-                                                                                                          response['data']['message']
-                                                                                                          )
-            errmsgrich = "{0}\n\nThere was a performing the requested task.  The error message is:\n\n{1}".format('\U0001F92E',
-                                                                                                                  response['data']['richmessage']
-                                                                                                                  )
+
+            errmsg = "{}\nThere was a problem performing the requested task.".format('\U0001F92E')
+            errmsg += "The error message is:\n{}".format(response['data']['message'])
+
+            errmsgrich = "{}\n\nThere was a problem performing the requested task.".format('\U0001F92E')
+            errmsgrich += "The error message is:\n\n{}".format(response['data']['richmessage'])
+
             teamobj.sendMessage(roomid, errmsg, richmessage=errmsgrich)
         elif response['responseType'] == 'message':
-            logger.debug("Sending message.\nRoom: {0}\nMessage:{1}\n".format(roomid, response['data']['message']))
+            """
+            The package returned a message to be sent to the requestor via Webex Teams.
+            """
+            logger.debug("Sending message.\n\tRoom: %s\n\tMessage:%s", roomid, response['data']['message'])
             if teamobj.sendMessage(roomid, response['data']['message'], richmessage=response['data']['richmessage']):
-                logger.debug("Result of sending message:\n{}".format(retval))
+                logger.debug("Result of sending message:\n\t%s", retval)
+                retval = True
             else:
                 logger.warning("There was a problem sending a message.  Check logfile for details")
         elif response['responseType'] == 'file':
+            """
+            The package returned a locally-stored file attachment to be sent to the user.  Try to send it and
+            then remove the temporary file if successfully attached.
+            """
             uploadresult = teamobj.attachFile(roomid, response['data']['file'], response['data']['message'])
             if uploadresult == False:
-                errortext = "{0}\nThere was a problem posting the file.  The error message is:\n{1}".format('\U0001F92E', uploadresult)
-                teamobj.sendMessage(roomid, errortext, richmessage=response['data']['richmessage'])
+                logger.warning("Failed to send file attachment.\n\tRoom: %s\n\tFile: %s\n\tMessage: %s",
+                               roomid,
+                               response['data']['file'],
+                               response['data']['message']
+                               )
+                errormsg = "{}\nThere was a problem posting the file.".format('\U0001F92E')
+                errormsg += "The error message is:\n{}".format(uploadresult)
+
+                errmsgrich = "{}\n\nThere was a problem posting the file.".format('\U0001F92E')
+                errmsgrich += "The error message is:\n\n{}".format(response['data']['richmessage'])
+
+                teamobj.sendMessage(roomid, errormsg, richmessage=errmsgrich)
             else:
-                retval = removeFile(response['data']['file'])
+                logger.debug("File uploaded successfully.\n\tRoom ID: %s\n\tFilename: %s", roomid, response['data']['file'])
+                removeFile(response['data']['file'])
+                retval = True
+    else:
+        logger.warning("Invalid response received in parseResponse.  Check log for details")
+        errmsg = "{}\nThere was a problem performing the requested task.".format('\U0001F92E')
+        errmsgrich = "{}\n\nThere was a performing the requested task.".format('\U0001F92E')
+        teamobj.sendMessage(roomid, errmsg, richmessage=errmsgrich)
+
     return retval
 
 
@@ -224,9 +259,9 @@ def index():
 
             # Extract necessary data
             roomid = postdata['data']['roomId']
-            logger.debug("Room ID from received message: {}".format(roomid))
+            logger.debug("Room ID from received message: %s", roomid)
             messageid = postdata['data']['id']
-            logger.debug("Message ID from received message: {}".format(messageid))
+            logger.debug("Message ID from received message: %s", messageid)
 
             # Get the message text.  If there's a problem retrieving it, do not pass go.
             messagetext = teams.getMessage(messageid)
@@ -241,22 +276,20 @@ def index():
                 """
                 messagetext = messagetext.get('text', '').lower()
                 messagetext = messagetext.replace(teams.myBotName().lower(), '').lstrip()
-                logger.debug("Message text received: {}".format(messagetext))
+                logger.debug("Message text received: %s", messagetext)
 
-                if teams.sendMessage(roomid, "Let me work on that... \U0001F557"):
-                    """
-                    The generic "please wait" message has been send.  Create a new dnaCenter object and pass
-                    some of our info to it.  Right now, that means the name of the logger so we can receive logging
-                    and the temporary directory to store any generated attachments
-                    """
-                    with CiscoDNA.dnaCenter.dnaCenter(logname=apiConfig.logname, tmp=apiConfig.tmpdir) as dna:
-                        # Send the received message to the dna object and send the response to 'parseResponse'
-                        dnaresponse = dna.parseTeamsMessage(messagetext)
-                        r = parseResponse(teams, roomid, dnaresponse)
-                        if r:
-                            retval = "success"
-                else:
-                    logger.error("Error sending message.  Check logs for details...")
+                teams.sendMessage(roomid, "Let me work on that... \U0001F557")
+                """
+                The generic "please wait" message has been send.  Create a new dnaCenter object and pass
+                some of our info to it.  Right now, that means the name of the logger so we can receive logging
+                and the temporary directory to store any generated attachments
+                """
+                with CiscoDNA.dnaCenter.dnaCenter(logname=apiConfig.logname, tmp=apiConfig.tmpdir) as dna:
+                    # Send the received message to the dna object and send the response to 'parseResponse'
+                    dnaresponse = dna.parseTeamsMessage(messagetext)
+                    r = parseResponse(teams, roomid, dnaresponse)
+                    if r:
+                        retval = "success"
         else:
             logger.warning("Invalid message received, ignoring")
 
