@@ -47,9 +47,12 @@ class webexTeams:
         """
         Class initialization.
 
-        :param botname: Name of the bot being used.  Used to read correct configuration stanzas
-        :param logname: Name of the calling logger.  If not given, use the package name
-        :param tmp: Directory for storing temporary files.  If not given, use value from config file.
+        :param botname:
+            Name of the bot being used.  Used to read correct configuration stanzas
+        :param logname:
+            Name of the calling logger.  If not given, use the package name
+        :param tmp:
+            Directory for storing temporary files.  If not given, use value from config file.
         """
 
         """
@@ -75,7 +78,8 @@ class webexTeams:
         Enter method - allows us to use 'with' when instantiating this class and do any cleanup at the end via the
         __exit__ method
 
-        :return: self (for now)
+        :return:
+            self (for now)
         """
         return self
 
@@ -85,9 +89,12 @@ class webexTeams:
         requested by a method.  If any matching key has a value of None, remove
         that key from the header dict.
 
-        :param headers: The headers which will be sent in the HTTP request
-        :param addHeaders: Delta header dictionary used to check for 'None' values
-        :return: dictionary containing the cleaned headers
+        :param headers:
+            The headers which will be sent in the HTTP request
+        :param addHeaders:
+            Delta header dictionary used to check for 'None' values
+        :return:
+            Dictionary containing the cleaned headers
         """
         for key in addHeaders.keys():
             if key == None and headers[key] != "":
@@ -99,9 +106,12 @@ class webexTeams:
         """
         Generic 'GET' method for HTTP requests.  Will attempt a GET request and catch exceptions.
 
-        :param url: URL to perform HTTP GET
-        :param addHeaders: Dictionary containing additional headers (if needed)
-        :return: The server's response if successful, otherwise False
+        :param url:
+            URL to perform HTTP GET
+        :param addHeaders:
+            Dictionary containing additional headers (if needed)
+        :return:
+            The server's response if successful, otherwise False
         """
         retval = False
 
@@ -134,10 +144,14 @@ class webexTeams:
         """
         Generic HTTP POST wrapper which catches exceptions.
 
-        :param url: URL for the HTTP POST
-        :param data: What to POST
-        :param addHeaders: Dictionary containing additional headers if needed
-        :return: The server's response if successful, otherwise False
+        :param url:
+            URL for the HTTP POST
+        :param data:
+            What to POST
+        :param addHeaders:
+            Dictionary containing additional headers if needed
+        :return:
+            The server's response if successful, otherwise False
         """
         retval = False
 
@@ -172,10 +186,14 @@ class webexTeams:
         Send a message to the specified roomid.  The message is expected; if a rich-formatted message is given then
         also include that for client which support rich text (e.g. Webex Teams client)
 
-        :param roomid: Room ID to send the message
-        :param message: Non-rich text message to send
-        :param richmessage: Optional - rich formatted text to send
-        :return: The server's response if successful, otherwise False
+        :param roomid:
+            Room ID to send the message
+        :param message:
+            Non-rich text message to send
+        :param richmessage:
+            Optional - rich formatted text to send
+        :return:
+            The server's response if successful, otherwise False
         """
         retval = False
         webexmsg = {
@@ -200,8 +218,10 @@ class webexTeams:
         Given a file, use the 'magic' module (from python-magic) to try to identify the file's MIME type.  Used when
         attaching a file to a Webex Teams message.
 
-        :param file: full path of the file needing a MIME type
-        :return: MIME type of the specified file
+        :param file:
+            Full path of the file needing a MIME type
+        :return:
+            MIME type of the specified file
         """
         mime = magic.Magic(mime=True)
         self.logger.debug("getMimeType: File %s has MIME type of: %s", file, mime)
@@ -213,10 +233,14 @@ class webexTeams:
         Send a file attachment to the specified Webex Teams room.  Get the MIME type of the file, update
         The Content-Type header, and attach the file with a caption
 
-        :param roomid: Room ID where the file will be posted
-        :param file: Path to the file attachment
-        :param message: Caption sent with the file attachment
-        :return: True on success, False otherwise
+        :param roomid:
+            Room ID where the file will be posted
+        :param file:
+            Path and filename of the file attachment
+        :param message:
+            Caption sent with the file attachment
+        :return:
+            True on success, False otherwise
         """
         retval = False
         media = MultipartEncoder(
@@ -245,8 +269,10 @@ class webexTeams:
         """
         Given a message ID, get the message contents
 
-        :param messageid: ID of the message to retrieve
-        :return: API response of the message GET request on success, False otherwise
+        :param messageid:
+            ID of the message to retrieve
+        :return:
+            API response of the message GET request on success, False otherwise
         """
         retval = False
         self.logger.debug("getMessage: Getting message ID {}".format(messageid))
@@ -268,8 +294,11 @@ class webexTeams:
     def getPerson( self, person):
         """
         Given a person ID, get that person's information
-        :param person: ID of the person to retrieve
-        :return: API response of the person GET request on success, False otherwise
+
+        :param person:
+            ID of the person to retrieve
+        :return:
+            API response of the person GET request on success, False otherwise
         """
         retval = False
         self.logger.debug("getPerson: Getting person with ID {}".format(person))
@@ -293,9 +322,12 @@ class webexTeams:
         Verify the person is allowed to send messages to the bot, and verify that the requestor is not the bot itself
         If all steps pass, the message is valid and may be acted upon.
 
-        :param msg: RAW incoming message received by the webhook
-        :param headers: The request headers received by the webhook
-        :return: True if message is valid, False otherwise.
+        :param msg:
+            RAW incoming message received by the webhook
+        :param headers:
+            The request headers received by the webhook
+        :return:
+            True if message is valid, False otherwise.
         """
         retval = False
 
@@ -330,6 +362,8 @@ class webexTeams:
         """
         Exit method - in conjunction with __enter__, allows us to use 'with' when instantiating this class.
         Any object cleanup tasks go here.
-        :return: True (for now)
+
+        :return:
+            True (for now)
         """
         return True
