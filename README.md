@@ -7,7 +7,7 @@ Initial operational capability is provided for a subset of Cisco DNA Center task
 
 # Making the App work
 
-## Pre-requisites 
+### 1: Pre-requisites 
 1.Python3
 
 2.Requirements pip install -r requirements.txt
@@ -34,26 +34,26 @@ Make sure that the bearer token used in creating the webhook is the bearer token
 
 ## Running the Code
 
-#### 1.Clone the code
+#### 1. Clone the code
 
 ```
 git clone https://github.com/psample-Cisco/WebexTeams-ModularBot.git
 ```
 
-#### 2.Create a Python Virtual Environment
+#### 2. Create a Python Virtual Environment
 
 ```
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-#### 3.Setup the dependencies
+#### 3. Setup the dependencies
 
 ```
 pip3 install -r requirements.txt
 ```
 
-#### 4.Configure the CiscoWebex/webexConfig.py file
+#### 4. Configure the CiscoWebex/webexConfig.py file
 Multiple bots may be configured here.  The idea is that each app (represented via API call to the main program) can be handled by a separate bot.  The webexConfig.py file includes a Python dictionary structure similar to:
 
 
@@ -82,9 +82,14 @@ botinfo = {
 ```
 For each bot, configure the relevant information.
 
-#### 4.Run the application via uwsgi
+#### 5. Configure the CiscoDNA/dnaConfig.py file
+
+#### 6. Run the application via uwsgi
 From a command prompt, ensure you have loaded the virtual environment for the application.  Afterward, you may start the app handler using the installed 'uwsgi' handler
 
 ```
 uwsgi --callable app ./uwsgi.ini
 ```
+
+#### 7. Interact with the bot
+Using the Webex Teams client, send a direct message to the Bot to interact.  Not sure which one?  Try 'help' - this will show a list of commands available to execute.
