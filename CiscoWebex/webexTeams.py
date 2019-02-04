@@ -124,13 +124,13 @@ class webexTeams:
             r.raise_for_status()
             retval = r.json()
         except requests.exceptions.HTTPError as errh:
-            self.logger.error("urlget: Http Error: %s", errh)
+            self.logger.error("urlget: Http Error: %s", errh, exc_info=True)
         except requests.exceptions.ConnectionError as errc:
-            self.logger.error("urlget: Error Connecting: %s", errc)
+            self.logger.error("urlget: Error Connecting: %s", errc, exc_info=True)
         except requests.exceptions.Timeout as errt:
-            self.logger.error("urlget: Timeout Error: %s", errt)
+            self.logger.error("urlget: Timeout Error: %s", errt, exc_info=True)
         except requests.exceptions.RequestException as err:
-            self.logger.error("urlget: Generic Request Exception: %s", err)
+            self.logger.error("urlget: Generic Request Exception: %s", err, exc_info=True)
 
         return retval
 
@@ -163,13 +163,13 @@ class webexTeams:
             r.raise_for_status()
             retval = r
         except requests.exceptions.HTTPError as errh:
-            self.logger.error("urlpost: Http Error: %s", errh)
+            self.logger.error("urlpost: Http Error: %s", errh, exc_info=True)
         except requests.exceptions.ConnectionError as errc:
-            self.logger.error("urlpost: Error Connecting: %s", errc)
+            self.logger.error("urlpost: Error Connecting: %s", errc, exc_info=True)
         except requests.exceptions.Timeout as errt:
-            self.logger.error("urlpost: Timeout Error: %s", errt)
+            self.logger.error("urlpost: Timeout Error: %s", errt, exc_info=True)
         except requests.exceptions.RequestException as err:
-            self.logger.error("urlpost: Generic Request Exception: %s", err)
+            self.logger.error("urlpost: Generic Request Exception: %s", err, exc_info=True)
 
         return retval
 
@@ -278,7 +278,7 @@ class webexTeams:
             self.logger.debug("getMessage: Successfully retrieved message.")
             retval = r
         else:
-            self.logger.error("getMessage: Problem retrieving message!  Check logfile for details.")
+            self.logger.error("getMessage: Problem retrieving message!  Check logfile for details.", exc_info=True)
 
         return retval
 
@@ -304,7 +304,7 @@ class webexTeams:
             retval = r
             self.logger.debug("getPerson: Successfully retrieved person")
         else:
-            self.logger.error("getPerson: Problem retrieving person!  Check logfile for details.")
+            self.logger.error("getPerson: Problem retrieving person!  Check logfile for details.", exc_info=True)
         return retval
 
 
