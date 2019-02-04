@@ -9,6 +9,7 @@ Initial operational capability is provided for a subset of Cisco DNA Center task
 
 ## Pre-requisites 
 1.Python3
+
 2.Requirements pip install -r requirements.txt
 
 To register a Bot, you’ll need to be logged in to Webex For-Developers Page with a “real” user – each bot needs to be tied to an actual user account. Adding one is extra simple, On the page, select “Create a Bot”; there’s only a couple fields to fill out
