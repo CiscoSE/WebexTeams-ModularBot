@@ -82,9 +82,9 @@ botinfo = {
 ```
 For each bot, configure the relevant information.
 
-#### 4.Run the application using python3 to start the server
+#### 4.Run the application via uwsgi
+From a command prompt, ensure you have loaded the virtual environment for the application.  Afterward, you may start the app handler using the installed 'uwsgi' handler
 
 ```
-cd server
-python3 botADna.py
+uwsgi --callable app ./uwsgi.ini
 ```
