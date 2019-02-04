@@ -55,20 +55,16 @@ class webexTeams:
             Directory for storing temporary files.  If not given, use value from config file.
         """
 
-        """
-        If the logger name was passed, append this package's name to it.  Otherwise, create a new logger with
-        only the package name
-        """
+        # If the logger name was passed, append this package's name to it.  Otherwise, create a new logger with
+        # only the package name
         if logname != __name__:
             logname = "{0}.{1}".format(logname, __name__)
         self.logger = logging.getLogger(logname)
 
-        """
-        Now do some init stuff:
-        - Pull in the config for this bot (specified by 'botname')
-        - Set the tmp folder for file attachments
-        - Set the global Authorization bearer token value in the global headers
-        """
+        # Now do some init stuff:
+        # - Pull in the config for this bot (specified by 'botname')
+        # - Set the tmp folder for file attachments
+        # - Set the global Authorization bearer token value in the global headers
         self.botConfig = webexConfig.botinfo[botname]
         self.tmpfolder = tmp
         self.globalHeaders['Authorization'] = "Bearer {}".format(self.botConfig['bearer'])
@@ -115,11 +111,9 @@ class webexTeams:
         """
         retval = False
 
-        """
-        Make a copy of the global headers.  If the calling function must add values, update the copy with the
-        difference.  Also, is the calling function sets a header key to 'None,' remove that key (via the
-        cleanHeaders function)
-        """
+        # Make a copy of the global headers.  If the calling function must add values, update the copy with the
+        # difference.  Also, is the calling function sets a header key to 'None,' remove that key (via the
+        # cleanHeaders function)
         headers = self.globalHeaders.copy()
         headers.update(addHeaders)
         headers = self.cleanHeaders(headers, addHeaders)
@@ -155,11 +149,9 @@ class webexTeams:
         """
         retval = False
 
-        """
-        Make a copy of the global headers.  If the calling function must add values, update the copy with the
-        difference.  Also, is the calling function sets a header key to 'None,' remove that key (via the
-        cleanHeaders function)
-        """
+        # Make a copy of the global headers.  If the calling function must add values, update the copy with the
+        # difference.  Also, is the calling function sets a header key to 'None,' remove that key (via the
+        # cleanHeaders function)
         headers = self.globalHeaders.copy()
         headers.update(addHeaders)
         headers = self.cleanHeaders(headers, addHeaders)
