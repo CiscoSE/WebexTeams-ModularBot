@@ -15,12 +15,6 @@ IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 or implied.
 """
 
-"""
-/**********************************************************************************************************************
-This package contains code used to interface with the Webex Teams API.
-/**********************************************************************************************************************
-"""
-
 from . import webexConfig
 import requests
 import hmac
