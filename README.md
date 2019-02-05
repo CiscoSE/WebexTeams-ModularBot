@@ -83,6 +83,14 @@ botinfo = {
 For each bot, configure the relevant information.
 
 #### 5. Configure the CiscoDNA/dnaConfig.py file
+Set the values for the host, port, username, and password:
+```
+dna_host = "ciscodnac.example.com"
+dna_port = 443
+dna_username = "ciscodnacusername"
+dna_password = "ciscodnacpassword"
+```
+These values will be used to obtain a Token for subsequent API calls.
 
 #### 6. Run the application via uwsgi
 From a command prompt, ensure you have loaded the virtual environment for the application.  Afterward, you may start the app handler using the installed 'uwsgi' handler
