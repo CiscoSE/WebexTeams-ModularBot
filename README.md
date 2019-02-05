@@ -104,3 +104,6 @@ Using the Webex Teams client, send a direct message to the Bot to interact.  Not
 
 ## Example:
 ![Alt text](https://github.com/psample-Cisco/WebexTeams-ModularBot/blob/master/dnabot-example1.png?raw=true "Sample Chat Session")
+
+# Credit:
+I had the idea to create a Webex bot for Cisco DNA Center, but a search revealed that someone else did as well.  The original code was sourced from https://github.com/CiscoDevNet/DNAC-Webex-Teams-Bot-App.git and was modified to meet my requirements.  Credit goes to the original author; thank you for the foundation.
