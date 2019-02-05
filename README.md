@@ -101,3 +101,5 @@ uwsgi --callable app ./uwsgi.ini
 
 #### 7. Interact with the bot
 Using the Webex Teams client, send a direct message to the Bot to interact.  Not sure which one?  Try 'help' - this will show a list of commands available to execute.
+
+## Examples:
