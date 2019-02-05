@@ -12,12 +12,6 @@ IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
 or implied.
 """
 
-"""
-/**********************************************************************************************************************
-This package contains code used to interface with Cisco DNA Center
-/**********************************************************************************************************************
-"""
-
 from . import dnaConfig
 import requests
 import json
@@ -29,6 +23,7 @@ import logging
 import dateparser
 import re
 from collections import defaultdict
+
 
 class dnaCenter:
 
