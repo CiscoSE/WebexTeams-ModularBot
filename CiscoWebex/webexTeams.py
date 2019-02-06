@@ -150,6 +150,10 @@ class webexTeams:
         headers.update(addHeaders)
         headers = self.cleanHeaders(headers, addHeaders)
 
+        if headers['Content-Type'] == "application/json":
+            data = json.dumps(data)
+
+
         try:
             self.logger.debug("Sending HTTP POST to %s", url)
             r = requests.post(url, data, headers=headers, verify=webexConfig.sslverify)
@@ -194,7 +198,7 @@ class webexTeams:
         self.logger.debug("sendMessage: Sending message:\n\tRoom ID: %s\n\tMessage:%s", roomid, message)
         # url = self.urlMessage
 
-        if self.urlpost(self.urlMessage, json.dumps(webexmsg)) != False:
+        if self.urlpost(self.urlMessage, webexmsg) != False:
             retval = True
 
         return retval
