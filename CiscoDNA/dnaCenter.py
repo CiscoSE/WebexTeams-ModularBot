@@ -29,8 +29,7 @@ class dnaCenter:
 
     # Define global HTTP headers for requests.  Authorization via bearer token will be initialized during __init__
     globalHeaders = {
-        "Content-Type": "application/json",
-        "x-auth-token": ""
+        "Content-Type": "application/json"
     }
 
     # Define global URLs for interacting with Webex Teams API here
@@ -48,6 +47,25 @@ class dnaCenter:
             Directory for storing temporary files.  If not given, use value from config file.
         """
 
+        def generateAuthString(username, password):
+            """
+            Generate a Base64-encoded string for basic authentication.  Enables the use of an Authorization:
+            header in a 'urlput' call so we can catch exceptions without parsing for the 'auth=' arg when calling
+            that function.
+
+            :param username:
+                Authorization username
+            :param password:
+                Authorization password
+            :return:
+                Base64-encoded string of 'username:password'
+            """
+            strAuth = "{0}:{1}".format(dnaConfig.dna_username, dnaConfig.dna_password)
+            strAuth = bytes(strAuth, "utf-8")
+            strAuth = base64.b64encode(strAuth)
+            strAuth = strAuth.decode("ascii")
+
+            return strAuth
 
         # If the logger name was passed, append this package's name to it.  Otherwise, create a new logger with
         # only the package name
@@ -58,11 +76,17 @@ class dnaCenter:
         # Now do some init stuff:
         # - Obtain an auth token from Cisco DNA Center and add the x-auth-token header
         # - Set the tmp folder for file attachments
-        url = "{0}/dna/system/api/v1/auth/token".format(self.baseurl)
+        url = "/dna/system/api/v1/auth/token".format(self.baseurl)
 
-        r = requests.post(url, auth=(dnaConfig.dna_username, dnaConfig.dna_password), verify=dnaConfig.sslverify)
-        r = r.json()
-        self.globalHeaders['x-auth-token'] = r.get("Token")
+        strAuth = generateAuthString(dnaConfig.dna_username, dnaConfig.dna_password)
+        authhead = {'Authorization': 'Basic %s' % strAuth}
+
+        r = self.urlpost(url, data=None, addHeaders=authhead)
+        if r != False:
+            self.globalHeaders['x-auth-token'] = r.get("Token")
+        else:
+            self.logger.error("Error setting the auth token", exc_info=True)
+            raise RuntimeError("There was a problem setting the authentication token.")
         self.tmpfolder = tmp
 
     def __enter__(self):
