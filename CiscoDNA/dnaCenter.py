@@ -22,6 +22,7 @@ import csv
 import logging
 import dateparser
 import re
+import base64
 from collections import defaultdict
 
 
