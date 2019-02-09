@@ -129,6 +129,8 @@ All times and dates are local to the timezone where this script is being execute
 
 **get inventory** Attach a CSV file with the network inventory
 
+**show pnp status**
+
 ***SOFTWARE IMAGES***
 
 **show software images** List available software images
@@ -223,6 +225,8 @@ show software cco image for platform: Shorter command to show recommended CCO im
         elif cmds == "get inventory":
             # Generates a CSV file containing the network inventory
             retval = self.getNetworkInventory()
+        elif cmds == "show pnp status":
+            retval = self.getPnpStatus()
         elif cmds == "show software platforms" or cmds == "show software platform":
             retval = self.getSoftwareImagePlatforms()
         elif cmds == "show software recommended image" or cmds == "show software cco image":
@@ -748,6 +752,40 @@ show software cco image for platform: Shorter command to show recommended CCO im
             self.logger.error(logmsg, exc_info=True)
             retval = self.generateApiResponse('error', logmsg, richmessage=logmsgrich)
 
+        def getPnpStatus(self):
+            url = "/dna/intent/api/v1/onboarding/pnp-device"
+
+            r = self.urlget(url)
+            r = r['response']
+
+            if r == []:
+                msg = "No PnP Status to report."
+            else:
+                pnpstat = list()
+
+                for status in r:
+                    details = {'serial': status['deviceInfo']['serialNumber'],
+                               'platform': status['deviceInfo']['pid'],
+                               'workflow': status['deviceInfo']['name'],
+                               'state': status['deviceInfo']['state'],
+                               }
+                    pnpstat.append(details)
+
+                msg = "{0: <25}{1: <20}{2: <25}{3: <20}\n".format("Serial Number",
+                                                                  "Platform",
+                                                                  "PnP Workflow",
+                                                                  "Status"
+                                                                  )
+                for detail in pnpstat:
+                    msg += "{0: <25}{1: <20}{2: <25}{3: <20}\n".format(detail['serial'],
+                                                                       detail['platform'],
+                                                                       detail['workflow'],
+                                                                       detail['state']
+                                                                       )
+
+                self.logger.debug("getPnpStatus:\n%s", msg)
+
+            return self.generateApiResponse('message', msg, richmessage="")
         return retval
 
     def __exit__(self, exc_type, exc_value, traceback):
