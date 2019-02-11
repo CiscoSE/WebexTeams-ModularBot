@@ -129,7 +129,7 @@ All times and dates are local to the timezone where this script is being execute
 
 **get inventory** Attach a CSV file with the network inventory
 
-**show pnp status**
+**show pnp status** to include Show device PnP status
 
 ***SOFTWARE IMAGES***
 
@@ -161,7 +161,7 @@ All times and dates are local to the timezone where this script is being execute
 
 INVENTORY
 get inventory Attach a CSV file with the network inventory
-
+"show pnp status Show device PnP status"
 SOFTWARE IMAGES
 show software images List available software images
 show software platforms Show available platforms for software images
@@ -750,43 +750,43 @@ show software cco image for platform: Shorter command to show recommended CCO im
             logmsgrich += "**Hint:** *If you were attempting to obtain health for a specific time, make sure Cisco DNA Center was running on the specified date / time.*\n\n"
 
             self.logger.error(logmsg, exc_info=True)
-            retval = self.generateApiResponse('error', logmsg, richmessage=logmsgrich)
+        retval = self.generateApiResponse('error', logmsg, richmessage=logmsgrich)
 
-        def getPnpStatus(self):
-            url = "/dna/intent/api/v1/onboarding/pnp-device"
+    def getPnpStatus(self):
+        url = "/dna/intent/api/v1/onboarding/pnp-device"
 
-            r = self.urlget(url)
-            r = r['response']
+        r = self.urlget(url)
+        r = r['response']
 
-            if r == []:
-                msg = "No PnP Status to report."
-            else:
-                pnpstat = list()
+        if r == []:
+            msg = "No PnP Status to report."
+        else:
+            pnpstat = list()
 
-                for status in r:
-                    details = {'serial': status['deviceInfo']['serialNumber'],
-                               'platform': status['deviceInfo']['pid'],
-                               'workflow': status['deviceInfo']['name'],
-                               'state': status['deviceInfo']['state'],
-                               }
-                    pnpstat.append(details)
+            for status in r:
+                details = {'serial': status['deviceInfo']['serialNumber'],
+                            'platform': status['deviceInfo']['pid'],
+                            'workflow': status['deviceInfo']['name'],
+                            'state': status['deviceInfo']['state'],
+                            }
+                pnpstat.append(details)
 
-                msg = "{0: <25}{1: <20}{2: <25}{3: <20}\n".format("Serial Number",
+            msg = "{0: <25}{1: <20}{2: <25}{3: <20}\n".format("Serial Number",
                                                                   "Platform",
                                                                   "PnP Workflow",
                                                                   "Status"
                                                                   )
-                for detail in pnpstat:
-                    msg += "{0: <25}{1: <20}{2: <25}{3: <20}\n".format(detail['serial'],
+            for detail in pnpstat:
+                msg += "{0: <25}{1: <20}{2: <25}{3: <20}\n".format(detail['serial'],
                                                                        detail['platform'],
                                                                        detail['workflow'],
                                                                        detail['state']
                                                                        )
 
-                self.logger.debug("getPnpStatus:\n%s", msg)
+            self.logger.debug("getPnpStatus:\n%s", msg)
 
-            return self.generateApiResponse('message', msg, richmessage="")
-        return retval
+         return self.generateApiResponse('message', msg, richmessage="")
+
 
     def __exit__(self, exc_type, exc_value, traceback):
         """
