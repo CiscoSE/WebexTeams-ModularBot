@@ -143,15 +143,11 @@ def parseResponse(teamobj, roomid, response):
     retval = False
     logger.debug("Parsing response from called package.  Response value:\n\t%s", response)
 
-    """
-    If the received response is False, there was a problem somewhere along the line and we won't be able
-    to process it.  If not false, we should have a valid API response structure and can do something with it. 
-    """
+    # If the received response is False, there was a problem somewhere along the line and we won't be able
+    # to process it.  If not false, we should have a valid API response structure and can do something with it.
     if response != False:
         if response['responseType'] == 'error':
-            """
-            Our package gave an error.  Create a text and rich text message then reply via Webex Teams.
-            """
+            # Our package gave an error.  Create a text and rich text message then reply via Webex Teams.
             logger.warning("There was a problem performing the requested task - check log file for details")
 
             errmsg = "{}\nThere was a problem performing the requested task.".format('\U0001F92E')
@@ -162,9 +158,7 @@ def parseResponse(teamobj, roomid, response):
 
             teamobj.sendMessage(roomid, errmsg, richmessage=errmsgrich)
         elif response['responseType'] == 'message':
-            """
-            The package returned a message to be sent to the requestor via Webex Teams.
-            """
+            # The package returned a message to be sent to the requestor via Webex Teams.
             logger.debug("Sending message.\n\tRoom: %s\n\tMessage:%s", roomid, response['data']['message'])
             if teamobj.sendMessage(roomid, response['data']['message'], richmessage=response['data']['richmessage']):
                 logger.debug("Result of sending message:\n\t%s", retval)
@@ -172,10 +166,8 @@ def parseResponse(teamobj, roomid, response):
             else:
                 logger.warning("There was a problem sending a message.  Check logfile for details")
         elif response['responseType'] == 'file':
-            """
-            The package returned a locally-stored file attachment to be sent to the user.  Try to send it and
-            then remove the temporary file if successfully attached.
-            """
+            # The package returned a locally-stored file attachment to be sent to the user.  Try to send it and
+            # then remove the temporary file if successfully attached.
             uploadresult = teamobj.attachFile(roomid, response['data']['file'], response['data']['message'])
             if uploadresult == False:
                 logger.warning("Failed to send file attachment.\n\tRoom: %s\n\tFile: %s\n\tMessage: %s",
@@ -236,22 +228,18 @@ def index():
     """
     retval = "failure"
 
-    """
-    Initial steps:
-    - Set the botname for this app.  This will enable the webexTeams class to load the correct config values
-    - Get the raw request from the webhook - this will be used to validate the incoming message
-    - Set a variable to hold the JSON POST data
-    """
+    # Initial steps:
+    # - Set the botname for this app.  This will enable the webexTeams class to load the correct config values
+    # - Get the raw request from the webhook - this will be used to validate the incoming message
+    # - Set a variable to hold the JSON POST data
     botname = "dnabot"
     raw = request.data.decode("utf-8")
     postdata = json.loads(raw)
 
-    """
-    Instantiate a new 'webexTeams' object named 'teams' and begin processing the message:
-    - Validate the incoming message
-    - If the message is valid, extract the room ID (for message replies) and the message text which will be
-      passed to the dnaCenter class for processing
-    """
+    # Instantiate a new 'webexTeams' object named 'teams' and begin processing the message:
+    # - Validate the incoming message
+    # - If the message is valid, extract the room ID (for message replies) and the message text which will be
+    #   passed to the dnaCenter class for processing
     with CiscoWebex.webexTeams.webexTeams(botname, logname=apiConfig.logname, tmp=apiConfig.tmpdir) as teams:
         if teams.validateMessage(raw, request.headers):
             # The message is valid, proceed...
@@ -266,24 +254,20 @@ def index():
             # Get the message text.  If there's a problem retrieving it, do not pass go.
             messagetext = teams.getMessage(messageid)
             if messagetext != False:
-                """
-                We have passed go and collected $200.  Proceed by converting the message to lowercase, sending a
-                reply to the Webex Teams response saying that the request is being processed, and send the message
-                to a new dnaCenter object for processing.
-                
-                Once a the message has been processed, a data structure will be returned and sent to the 'parseResponse'
-                function to generate the proper Webex Teams response
-                """
+                # We have passed go and collected $200.  Proceed by converting the message to lowercase, sending a
+                # reply to the Webex Teams response saying that the request is being processed, and send the message
+                # to a new dnaCenter object for processing.
+                #
+                # Once a the message has been processed, a data structure will be returned and sent to the
+                # 'parseResponse' function to generate the proper Webex Teams response
                 messagetext = messagetext.get('text', '').lower()
                 messagetext = messagetext.replace(botname.lower(), '').lstrip()
                 logger.debug("Message text received: %s", messagetext)
 
                 teams.sendMessage(roomid, "Let me work on that... \U0001F557")
-                """
-                The generic "please wait" message has been send.  Create a new dnaCenter object and pass
-                some of our info to it.  Right now, that means the name of the logger so we can receive logging
-                and the temporary directory to store any generated attachments
-                """
+                # The generic "please wait" message has been sent.  Create a new dnaCenter object and pass
+                # some of our info to it.  Right now, that means the name of the logger so we can receive logging
+                # and the temporary directory to store any generated attachments
                 with CiscoDNA.dnaCenter.dnaCenter(logname=apiConfig.logname, tmp=apiConfig.tmpdir) as dna:
                     # Send the received message to the dna object and send the response to 'parseResponse'
                     dnaresponse = dna.parseTeamsMessage(messagetext)
@@ -302,10 +286,8 @@ END Webhook processing
 """
 
 if __name__ == '__main__':
-    """
-    Run the Flask app.  By default, will listen on all local IP addresses on port 5000.
-    __main__ will only be executed if this script is being run interactively.  If the UWSGI app server
-    is used, the Flask app routing will take place directly above and will listen for the specified
-    HTTP API calls...
-    """
+    # Run the Flask app.  By default, will listen on all local IP addresses on port 5000.
+    # __main__ will only be executed if this script is being run interactively.  If the UWSGI app server
+    # is used, the Flask app routing will take place directly above and will listen for the specified
+    # HTTP API calls...
     app.run(host='0.0.0.0', debug=True)
