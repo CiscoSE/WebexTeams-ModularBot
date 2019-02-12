@@ -757,10 +757,15 @@ show software cco image for platform: Shorter command to show recommended CCO im
         return retval
 
     def getPnpStatus(self):
+        """
+        Returns a list of devices configured for PnP as well as the current status
+
+        :return:
+            Dictionary API Response
+        """
         url = "/dna/intent/api/v1/onboarding/pnp-device"
 
         r = self.urlget(url)
-        r = r['response']
 
         if r == []:
             msg = "No PnP Status to report."
