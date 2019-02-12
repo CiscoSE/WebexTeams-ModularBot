@@ -483,7 +483,6 @@ show software cco image for platform: Shorter command to show recommended CCO im
         numhealthy = 0
 
         for types in dict.keys(data['health']):
-            # print( "Data type and value: {0} {1}".format( types, data[types]))
             colorchart.append(self.assignHealthColor(data['health'][types]['score']))
             bartitles.append("{0}/{1} Healthy\n{2} Poor/Fair/No Data".format(data['health'][types]['healthy'],
                                                                              data['health'][types]['total'],
@@ -678,10 +677,14 @@ show software cco image for platform: Shorter command to show recommended CCO im
 
     def getNetworkHealthImage(self, timestamp=int(round(time.time() * 1000))):
         """
-
+        Retrieve network health data for timestamp (or current time if not specified).  If health data retrieval
+        succeeds, send it to 'drawHealthChart' to create an image.  Once all is successful, generate an API response
+        containing the filename to be posted to Webex Teams.
 
         :param timestamp:
+            Epoch time in milliseconds for the health image generation.  If not specified, use the current time.
         :return:
+            Dictionary API Response
         """
         retval = False
         url = "/dna/intent/api/v1/network-health?timestamp={0}".format(timestamp)
@@ -727,7 +730,7 @@ show software cco image for platform: Shorter command to show recommended CCO im
                                                                 'score': healthdist['healthScore'],
                                                                 }
 
-            print("Healthdata:\n{}".format(healthData))
+            self.logger.debug("Healthdata:\n%s\n", healthData)
 
             filename = "{0}/NetworkHealth_{1}.png".format(self.tmpfolder, timestamp)
 
@@ -750,7 +753,8 @@ show software cco image for platform: Shorter command to show recommended CCO im
             logmsgrich += "**Hint:** *If you were attempting to obtain health for a specific time, make sure Cisco DNA Center was running on the specified date / time.*\n\n"
 
             self.logger.error(logmsg, exc_info=True)
-        retval = self.generateApiResponse('error', logmsg, richmessage=logmsgrich)
+            retval = self.generateApiResponse('error', logmsg, richmessage=logmsgrich)
+        return retval
 
     def getPnpStatus(self):
         url = "/dna/intent/api/v1/onboarding/pnp-device"
@@ -784,8 +788,7 @@ show software cco image for platform: Shorter command to show recommended CCO im
                                                                        )
 
             self.logger.debug("getPnpStatus:\n%s", msg)
-
-         return self.generateApiResponse('message', msg, richmessage="")
+        return self.generateApiResponse('message', msg, richmessage="")
 
 
     def __exit__(self, exc_type, exc_value, traceback):
