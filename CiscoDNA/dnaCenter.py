@@ -100,6 +100,10 @@ class dnaCenter:
         """
         return self
 
+    """
+    /******************************************************************************************************************
+    BEGIN Help context
+    """
     def getHelpMessage(self):
         """
         Define the help message to display is an invalid command is entered (or 'help')
@@ -171,6 +175,16 @@ show software cco image for platform: Shorter command to show recommended CCO im
         """
 
         return self.generateApiResponse('message', helpMsg, richmessage=helpMsgRich)
+
+    """
+    END Help context
+    /******************************************************************************************************************
+    """
+
+    """
+    /******************************************************************************************************************
+    BEGIN Webex Teams Integration functions
+    """
 
     def parseTeamsMessage(self, msgdata):
         """
@@ -309,6 +323,16 @@ show software cco image for platform: Shorter command to show recommended CCO im
         self.logger.debug("API Response from DNA Center:\n{}".format(apiResponse))
         return apiResponse
 
+    """
+    END Webex Teams Integration functions
+    /******************************************************************************************************************
+    """
+
+    """
+    /******************************************************************************************************************
+    BEGIN HTTP Helper functions
+    """
+
     def cleanHeaders(self, headers, addHeaders):
         """
         Take the default headers and compare to items in the additional headers
@@ -422,6 +446,16 @@ show software cco image for platform: Shorter command to show recommended CCO im
             retval = r
 
         return retval
+
+    """
+    END HTTP Helper functions
+    /******************************************************************************************************************
+    """
+
+    """
+    /******************************************************************************************************************
+    BEGIN Assurance Functions
+    """
 
     def assignHealthColor(self, healthScore):
         """
@@ -553,128 +587,6 @@ show software cco image for platform: Shorter command to show recommended CCO im
 
         return retval
 
-    def getSoftwareImagePlatforms(self):
-        """
-        Generate a list of the available software platforms based on images present in Cisco DNA Center
-
-        :return:
-            Dictionary API response for Webex Teams reply
-        """
-        url = "/dna/intent/api/v1/image/importation"
-        r = self.urlget(url)
-        r = r['response']
-
-        message = "Software images are available for the following platforms:\n"
-        messagerich = "Software images are available for the following platforms:\n\n"
-
-        platforms = set()
-
-        for image in r:
-            platforms.add(image['family'])
-
-        for family in platforms:
-            message += "{}\n".format(family)
-            messagerich += "**{}**\n\n".format(family)
-
-        return self.generateApiResponse('message', message, richmessage=messagerich)
-
-    def getSoftwareImages(self, family="", cco=False):
-        """
-        Generate a list of the available software images
-
-        :return:
-            Dictionary API response for Webex Teams reply
-        """
-        url = "/dna/intent/api/v1/image/importation"
-
-        if family != "" or cco == True:
-            url += "?"
-            if family != "":
-                url += "family={}".format(family)
-                if cco == True:
-                    url += "&isCCORecommended=true"
-            elif cco != False:
-                url += "isCCORecommended=true"
-
-        r = self.urlget(url)
-        r = r['response']
-
-        if r == []:
-            msg = "No images are available which meet the specified criteria."
-        else:
-            platform = defaultdict(list)
-
-            for image in r:
-                details = {'name': image['name'],
-                           'created': image['createdTime']}
-                platform[image['family']].append(details)
-
-            msg = "The following images are available:\n\n"
-            for fam in platform:
-                msg += "Platform: {}\n".format(fam)
-                for image in platform[fam]:
-                    msg += "\t{0}\n".format(image['name'])
-                msg += "\n"
-
-            self.logger.debug("getSoftwareImages:\n%s", msg)
-
-        return self.generateApiResponse('message', msg, richmessage="")
-
-    def getNetworkInventory(self):
-        """
-        Generate a CSV which contains the entire network inventory.  This is performed using a paginated GET
-        request to the network-device API call to avoid timeout or processing too much data.
-
-        Each iteration will retrieve (step) number of devices and process accordingly - the step may be adjusted up
-        to the maximum supported by the API call (check Cisco DNA API documentation for details)
-
-        The fields for the CSV are defined in the 'csvheader' variable - any JSON key returned from the URL
-        may be included in this list and will be included in the generated inventory file.
-
-        :return:
-            Dictionary API response
-        """
-        step = 100
-        start = 1
-        end = step
-
-        devices = list()
-
-        csvheader = ['hostname', 'family', 'serialNumber', 'platformId', 'softwareVersion', 'macAddress',
-                     'managementIpAddress']
-
-        timestamp = int(round(time.time() * 1000))
-        timestr = time.strftime("%Y-%m-%d_%H:%M:%S_%Z", time.localtime(timestamp / 1000))
-        filename = "{0}/inventory_{1}.csv".format(self.tmpfolder, timestamp)
-
-        # Begin iterating over the inventory returned from Cisco DNA Center.  Extend the fields list with retrieved
-        # fields in the JSON response, then append the generated 'fields' list to the 'devices' list
-        while True:
-            url = "/dna/intent/api/v1/network-device/{0}/{1}".format(start, end)
-            r = self.urlget(url)
-            r = r['response']
-
-            if r != []:
-                for device in r:
-                    fields = list()
-                    for head in csvheader:
-                        fields.extend([device[head]])
-                    devices.append(fields)
-                start += step
-                end += step
-            else:
-                break
-
-        # Generate the CSV file with header row
-        with open(filename, 'w') as invfile:
-            wr = csv.writer(invfile)
-            wr.writerow(csvheader)
-            for row in devices:
-                wr.writerow(row)
-
-        apimsg = "NetworkInventory_{}".format(timestr)
-        return self.generateApiResponse('file', apimsg, file=filename)
-
     def getNetworkHealthImage(self, timestamp=int(round(time.time() * 1000))):
         """
         Retrieve network health data for timestamp (or current time if not specified).  If health data retrieval
@@ -756,6 +668,158 @@ show software cco image for platform: Shorter command to show recommended CCO im
             retval = self.generateApiResponse('error', logmsg, richmessage=logmsgrich)
         return retval
 
+    """
+    END Assurance Functions
+    /******************************************************************************************************************
+    """
+
+    """
+    /******************************************************************************************************************
+    BEGIN Software Image Management Functions
+    """
+
+    def getSoftwareImagePlatforms(self):
+        """
+        Generate a list of the available software platforms based on images present in Cisco DNA Center
+
+        :return:
+            Dictionary API response for Webex Teams reply
+        """
+        url = "/dna/intent/api/v1/image/importation"
+        r = self.urlget(url)
+        r = r['response']
+
+        message = "Software images are available for the following platforms:\n"
+        messagerich = "Software images are available for the following platforms:\n\n"
+
+        platforms = set()
+
+        for image in r:
+            platforms.add(image['family'])
+
+        for family in platforms:
+            message += "{}\n".format(family)
+            messagerich += "**{}**\n\n".format(family)
+
+        return self.generateApiResponse('message', message, richmessage=messagerich)
+
+    def getSoftwareImages(self, family="", cco=False):
+        """
+        Generate a list of the available software images
+
+        :return:
+            Dictionary API response for Webex Teams reply
+        """
+        url = "/dna/intent/api/v1/image/importation"
+
+        if family != "" or cco == True:
+            url += "?"
+            if family != "":
+                url += "family={}".format(family)
+                if cco == True:
+                    url += "&isCCORecommended=true"
+            elif cco != False:
+                url += "isCCORecommended=true"
+
+        r = self.urlget(url)
+        r = r['response']
+
+        if r == []:
+            msg = "No images are available which meet the specified criteria."
+        else:
+            platform = defaultdict(list)
+
+            for image in r:
+                details = {'name': image['name'],
+                           'created': image['createdTime']}
+                platform[image['family']].append(details)
+
+            msg = "The following images are available:\n\n"
+            for fam in platform:
+                msg += "Platform: {}\n".format(fam)
+                for image in platform[fam]:
+                    msg += "\t{0}\n".format(image['name'])
+                msg += "\n"
+
+            self.logger.debug("getSoftwareImages:\n%s", msg)
+
+        return self.generateApiResponse('message', msg, richmessage="")
+
+    """
+    END Software Image Management Functions
+    /******************************************************************************************************************
+    """
+
+    """
+    /******************************************************************************************************************
+    BEGIN Inventory Functions
+    """
+
+    def getNetworkInventory(self):
+        """
+        Generate a CSV which contains the entire network inventory.  This is performed using a paginated GET
+        request to the network-device API call to avoid timeout or processing too much data.
+
+        Each iteration will retrieve (step) number of devices and process accordingly - the step may be adjusted up
+        to the maximum supported by the API call (check Cisco DNA API documentation for details)
+
+        The fields for the CSV are defined in the 'csvheader' variable - any JSON key returned from the URL
+        may be included in this list and will be included in the generated inventory file.
+
+        :return:
+            Dictionary API response
+        """
+        step = 100
+        start = 1
+        end = step
+
+        devices = list()
+
+        csvheader = ['hostname', 'family', 'serialNumber', 'platformId', 'softwareVersion', 'macAddress',
+                     'managementIpAddress']
+
+        timestamp = int(round(time.time() * 1000))
+        timestr = time.strftime("%Y-%m-%d_%H:%M:%S_%Z", time.localtime(timestamp / 1000))
+        filename = "{0}/inventory_{1}.csv".format(self.tmpfolder, timestamp)
+
+        # Begin iterating over the inventory returned from Cisco DNA Center.  Extend the fields list with retrieved
+        # fields in the JSON response, then append the generated 'fields' list to the 'devices' list
+        while True:
+            url = "/dna/intent/api/v1/network-device/{0}/{1}".format(start, end)
+            r = self.urlget(url)
+            r = r['response']
+
+            if r != []:
+                for device in r:
+                    fields = list()
+                    for head in csvheader:
+                        fields.extend([device[head]])
+                    devices.append(fields)
+                start += step
+                end += step
+            else:
+                break
+
+        # Generate the CSV file with header row
+        with open(filename, 'w') as invfile:
+            wr = csv.writer(invfile)
+            wr.writerow(csvheader)
+            for row in devices:
+                wr.writerow(row)
+
+        apimsg = "NetworkInventory_{}".format(timestr)
+        return self.generateApiResponse('file', apimsg, file=filename)
+
+    """
+    END Inventory Functions
+    /******************************************************************************************************************
+    """
+
+    """
+    /******************************************************************************************************************
+    BEGIN PnP Functions
+    """
+
     def getPnpStatus(self):
         """
         Returns a list of devices configured for PnP as well as the current status
@@ -794,6 +858,11 @@ show software cco image for platform: Shorter command to show recommended CCO im
 
             self.logger.debug("getPnpStatus:\n%s", msg)
         return self.generateApiResponse('message', msg, richmessage="")
+
+    """
+    END PnP Functions
+    /******************************************************************************************************************
+    """
 
 
     def __exit__(self, exc_type, exc_value, traceback):
